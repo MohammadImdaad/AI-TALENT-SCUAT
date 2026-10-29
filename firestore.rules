@@ -1,0 +1,81 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin') ||
+        request.auth.token.email == 'mohammadimdaad040@gmail.com'
+      );
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Users collection: users can read and write only their own profile
+    match /users/{userId} {
+      allow get: if isOwner(userId) || isAdmin();
+      allow list: if isAdmin();
+      allow create: if isOwner(userId) &&
+        request.resource.data.name is string &&
+        request.resource.data.name.size() > 0 &&
+        request.resource.data.name.size() <= 100 &&
+        request.resource.data.email is string &&
+        request.resource.data.email.size() <= 150 &&
+        request.resource.data.role in ['user', 'admin'];
+      allow update: if isOwner(userId) &&
+        request.resource.data.email == resource.data.email &&
+        request.resource.data.name is string &&
+        request.resource.data.name.size() <= 100;
+      allow delete: if isAdmin();
+    }
+
+    // Jobs collection: public read for job board; only admins can create, update, delete
+    match /jobs/{jobId} {
+      allow read: if true;
+      allow create: if isAdmin() &&
+        request.resource.data.title is string &&
+        request.resource.data.title.size() > 0 &&
+        request.resource.data.title.size() <= 150 &&
+        request.resource.data.recruiterId == request.auth.uid;
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Applications collection: candidates can apply and view their own; admins can view all and update status
+    match /applications/{applicationId} {
+      allow get: if isSignedIn() && (
+        resource.data.candidateId == request.auth.uid ||
+        isAdmin()
+      );
+      allow list: if isSignedIn() && (
+        resource.data.candidateId == request.auth.uid ||
+        isAdmin()
+      );
+      allow create: if isSignedIn() &&
+        request.resource.data.candidateId == request.auth.uid;
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Connection test document
+    match /test/connection {
+      allow read: if true;
+    }
+  }
+}

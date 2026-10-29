@@ -1,0 +1,206 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile with role-based attributes for candidates and recruiters",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100,
+          "description": "Full name of the user"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "maxLength": 150,
+          "description": "Email address of the user"
+        },
+        "role": {
+          "type": "string",
+          "enum": ["user", "admin"],
+          "description": "Role: user for candidates, admin for recruiters"
+        },
+        "company": {
+          "type": "string",
+          "maxLength": 120,
+          "description": "Company name for recruiter/admin accounts"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "ISO timestamp of account creation"
+        }
+      },
+      "required": ["name", "email", "role", "createdAt"]
+    },
+    "Job": {
+      "title": "Job",
+      "description": "Job posting created and managed by recruiters",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 150,
+          "description": "Title of the job role"
+        },
+        "company": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120,
+          "description": "Hiring company name"
+        },
+        "location": {
+          "type": "string",
+          "maxLength": 100,
+          "description": "Office or remote location"
+        },
+        "department": {
+          "type": "string",
+          "maxLength": 80,
+          "description": "Department name"
+        },
+        "type": {
+          "type": "string",
+          "maxLength": 40,
+          "description": "Employment type"
+        },
+        "salary": {
+          "type": "string",
+          "maxLength": 60,
+          "description": "Salary range or comp"
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 5000,
+          "description": "Job description text"
+        },
+        "requirements": {
+          "type": "array",
+          "description": "Array of requirements"
+        },
+        "skills": {
+          "type": "array",
+          "description": "List of core skills"
+        },
+        "recruiterId": {
+          "type": "string",
+          "maxLength": 128,
+          "description": "UID of the recruiter"
+        },
+        "recruiterName": {
+          "type": "string",
+          "maxLength": 100,
+          "description": "Name of recruiter"
+        },
+        "applicantCount": {
+          "type": "number",
+          "description": "Number of submitted applications"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["open", "closed"],
+          "description": "Requisition status"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp string"
+        }
+      },
+      "required": ["title", "company", "description", "recruiterId", "status", "createdAt"]
+    },
+    "Application": {
+      "title": "Application",
+      "description": "Candidate application to a specific job with resume and AI scoring",
+      "type": "object",
+      "properties": {
+        "jobId": {
+          "type": "string",
+          "maxLength": 128,
+          "description": "ID of target job"
+        },
+        "jobTitle": {
+          "type": "string",
+          "maxLength": 150,
+          "description": "Job title"
+        },
+        "company": {
+          "type": "string",
+          "maxLength": 120,
+          "description": "Company name"
+        },
+        "candidateId": {
+          "type": "string",
+          "maxLength": 128,
+          "description": "Candidate user UID"
+        },
+        "candidateName": {
+          "type": "string",
+          "maxLength": 100,
+          "description": "Candidate name"
+        },
+        "candidateEmail": {
+          "type": "string",
+          "maxLength": 150,
+          "description": "Candidate email"
+        },
+        "resumeFileName": {
+          "type": "string",
+          "maxLength": 200,
+          "description": "Uploaded resume filename"
+        },
+        "resumeUrl": {
+          "type": "string",
+          "maxLength": 1000,
+          "description": "URL to stored resume PDF"
+        },
+        "aiScore": {
+          "type": "number",
+          "description": "0-100 Gemini match score"
+        },
+        "aiSummary": {
+          "type": "string",
+          "maxLength": 2000,
+          "description": "Gemini reasoning summary"
+        },
+        "matchedSkills": {
+          "type": "array",
+          "description": "List of matched skills"
+        },
+        "missingSkills": {
+          "type": "array",
+          "description": "List of missing skills"
+        },
+        "experienceYears": {
+          "type": "number",
+          "description": "Extracted years of experience"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["applied", "reviewing", "shortlisted", "rejected"],
+          "description": "Application review status"
+        },
+        "appliedAt": {
+          "type": "string",
+          "description": "Timestamp of application"
+        }
+      },
+      "required": ["jobId", "candidateId", "status", "appliedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles for candidate (user) and recruiter (admin)"
+    },
+    "/jobs/{jobId}": {
+      "schema": "Job",
+      "description": "Job openings created by recruiters (admins)"
+    },
+    "/applications/{applicationId}": {
+      "schema": "Application",
+      "description": "Job applications submitted by candidates"
+    }
+  }
+}

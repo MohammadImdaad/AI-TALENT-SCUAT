@@ -1,0 +1,6 @@
+{
+  "name": "TalentScout AI",
+  "description": "AI-powered recruitment platform connecting top talent with recruiters using automated resume parsing and intelligent candidate scoring.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
